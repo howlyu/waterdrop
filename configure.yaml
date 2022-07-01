@@ -10,10 +10,10 @@ sinkdb_dbname_suffix: "ods_"
 # table rule
 "output_dir": "output/result"
 
-# flink env
+# flink env & parameters
 flink_pipeline_name_suffix: "cdc-task-"
 flink_env_parameters:
-  - parallelism.default=10
+  - parallelism.default=2
   - table.dml-sync=false
   - execution.runtime-mode=streaming
 

@@ -6,26 +6,26 @@
 2. 安装virtualenvwrapper
 ```shell
 # 安装package
-pip3 install virtualenvwrapper
+$ pip3 install virtualenvwrapper
 
 # 设置环境，加入 ~/.bash_profile中
-source /usr/local/bin/virtualenvwrapper.sh
-export WORKON_HOME=~/.virtualenvs
-export VIRTUALENVWRAPPER_PYTHON=/bin/python3
+$ source /usr/local/bin/virtualenvwrapper.sh
+$ export WORKON_HOME=~/.virtualenvs
+$ export VIRTUALENVWRAPPER_PYTHON=/bin/python3
 
 # 环境存放目录
-mkdir -p $WORKON_HOME
+$ mkdir -p $WORKON_HOME
 
 #启动激活环境
-mkvirtualenv waterdrop
+$ mkvirtualenv waterdrop
 
-workon waterdrop # 第二次启动，激活环境
+$ workon waterdrop # 第二次启动，激活环境
 ```
 3. 校验flink和mysql
 ```shell
-echo $FLINK_HOME
-flink --version
-mysql --version
+$ echo $FLINK_HOME
+$ flink --version
+$ mysql --version
 ```
 
 
@@ -36,23 +36,23 @@ mysql --version
 1. 先从gitlab 或 github中下载代码到本地目录
 2. 设置环境变量 
 ```shell
-export WATERDROP_HOME = ~/waterdrop/
+$ export WATERDROP_HOME = ~/waterdrop/
+$ cd $WATERDROP_HOME
 
 #安装package
-pip3 install -r requirements.txt
+$ pip3 install -r requirements.txt
 ```
 2. 注册package
 ```shell
-cd $WATERDROP_HOME
-python3 setup.py
+$ pip3 install --editable .
 
 #测试
-waterdrop --version
+$ waterdrop --version
 ```
 3. 启动任务
 ```shell
 # 查看帮助
-waterdrop --help
+$ waterdrop --help
 
 # 总共分成3步执行
 # 1. 根据模板生成配置文件和脚本文件
@@ -63,7 +63,7 @@ waterdrop --help
 - Tips:
   1. 清理flink job
   ```shell
-  flink list|grep 'cdc-task'|awk -F ':' '{print $4}'|xargs -i flink cancel {}
+  $ flink list|grep 'cdc-task'|awk -F ':' '{print $4}'|xargs -i flink cancel {}
   ```
   2. 查询源数据库中需要同步的表
   ```sql
