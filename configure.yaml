@@ -1,0 +1,28 @@
+# sink database
+sinkdb_jdbcurl: "jdbc:mysql://192.168.30.134:9030"
+sinkdb_loadurl: "192.168.30.134:8030"
+sinkdb_host: "192.168.30.134"
+sinkdb_port: "9030"
+sinkdb_username: "sailingdw"
+sinkdb_password: "sailingdw"
+sinkdb_dbname_suffix: "ods_"
+
+# table rule
+"output_dir": "output/result"
+
+# flink env
+flink_pipeline_name_suffix: "cdc-task-"
+flink_env_parameters:
+  - parallelism.default=10
+  - table.dml-sync=false
+  - execution.runtime-mode=streaming
+
+# source database
+sourcedb_host: 192.168.30.130
+sourcedb_port: 3306
+sourcedb_user: flinkcdc
+sourcedb_password: flinkcdc
+tables:
+  - cdcdemo.table1
+  - cdcdemo.table2
+  - mgr.sys_account

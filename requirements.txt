@@ -1,0 +1,6 @@
+jinja2
+PyYAML
+click
+sarge
+pytest
+pytest-assume
