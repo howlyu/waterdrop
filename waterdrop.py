@@ -12,6 +12,8 @@ import yaml
 from jinja2 import Environment, FileSystemLoader
 
 from _version import __version__
+from modes.command import Command
+from modes.streamx import Streamx
 
 
 def check_env() -> bool:
@@ -174,12 +176,6 @@ def generate_single_script(output):
         click.echo("Start SMT tool failed with return code : %s" % e)
 
 
-def generate_sql_script_name(output_dir, table_name, output_type):
-    name_prefix = "starrocks-create." if output_type == "starrocks" else "flink-create."
-    name_suffix = ".sql"
-    return output_dir + "/" + name_prefix + table_name + name_suffix
-
-
 @cli.command("gen-all-tables-dorisdb")
 def create_all_table_in_starrocks():
     """ Create all tables in Starrocks"""
@@ -205,7 +201,7 @@ def create_single_table_in_starrocks(table):
     output_dir = config.get("output_dir") + '-' + table
     if not exists(output_dir):
         return None
-    script_dir = generate_sql_script_name(output_dir, table, 'starrocks')
+    script_dir = output_dir + "starrocks-create." + table + ".sql"
     if not exists(script_dir):
         return None
     # execute sql script in mysql
@@ -227,12 +223,19 @@ def create_single_table_in_starrocks(table):
 
 
 @cli.command("gen-all-flink-job")
-def create_all_flink_jobs():
+@click.argument("mode",
+                default="streamx",
+                required=True,
+                prompt="create mode: [streamx|command]",
+                type=click.Choice(['streamx', 'command'], case_sensitive=True),
+                help="choice the mode of creating flink job")
+def create_all_flink_jobs(mode):
     """create flink job in local flink cluster"""
     config = get_configure()
+    mode = Streamx() if mode == "streamx" else Command()
     with click.progressbar(
             length=len(config.get("tables")),
-            label="Creating flink job",
+            label="Creating flink job [%s]" % mode,
             show_percent=False,
             show_pos=True,
             bar_template="%(label)s  %(bar)s | %(info)s",
@@ -240,35 +243,8 @@ def create_all_flink_jobs():
             empty_char=" ",
     ) as bar:
         for table in config.get("tables"):
-            create_single_flink_job(table)
+            mode.create(table, config)
             bar.update(1)
-
-
-# @cli.command("gen-flink-job")
-# @click.argument("table")
-def create_single_flink_job(table):
-    """According to the table name, startup the flink job. """
-    config = get_configure()
-    output_dir = config.get("output_dir") + '-' + table
-    if not exists(output_dir):
-        click.echo("Directory (%s) not exist!" % output_dir)
-        return None
-    flink_home = os.getenv('FLINK_HOME') if os.getenv('FLINK_HOME') else '~/.local/flink/'
-    script_dir = generate_sql_script_name(output_dir, table, 'flink')
-    if not exists(script_dir):
-        return None
-    # execute flink job task
-    try:
-        p = sarge.run(flink_home + "/bin/sql-client.sh -f" + script_dir,
-                      stderr=sarge.Capture())
-        if p.returncode != 0:
-            returncode = p.returncode
-            stderr_text = p.stderr.text
-            click.echo("create flink job ( %s ) failed with return code %i: %s" % (table, returncode, stderr_text))
-        else:
-            click.echo("create flink job ( %s ) successed." % table)
-    except Exception as e:
-        click.echo("create flink job ( %s ) failed with excepton: %s" % (table, e))
 
 
 @cli.command("workflow")
@@ -277,23 +253,37 @@ def create_single_flink_job(table):
               prompt='The table name [schema.table]',
               required=True,
               help='input the table name that is synchronized to Dorisdb')
-def workflow(table):
+@click.option('-m', '--mode',
+              type=click.Choice(['streamx', 'command'], case_sensitive=True),
+              prompt='Choice mode [streamx|command]',
+              default='streamx',
+              required=True,
+              help='choice the mode of flink application execution'
+              )
+def workflow(table, mode):
     """
     Run all step :
         1=generate the config file,
         2=create table in starrocks,
-        3=create flink job
+        3=create flink job with mode
     """
     if check_table_exists_config(table):
         output_dir = get_configure().get("output_dir") + "/config/" + "config-" + table + ".conf"
         dump_file(output_dir, generate_single_config(table))
         generate_single_script(output_dir)
-        append_params_single_script(table)
+        if mode == "command":
+            append_params_single_script(table)
         replace_single_script(table.split(".")[0], table)
         click.echo("【%s】: configure and scripts generated!" % click.style("Step1", fg="red"))
+
+        # create table in starrocks
         create_single_table_in_starrocks(table)
         click.echo("【%s】: create table (%s) succeed!" % (click.style("Step2", fg="red"), click.style(table, fg="red")))
-        create_single_flink_job(table)
-        click.echo("【%s】: flink job (%s) started!" % (click.style("Step3", fg="red"), click.style(table, fg="red")))
+
+        # start flink application with mode
+        mode = Streamx() if mode == 'streamx' else Command()
+        mode.create(table, get_configure())
+        click.echo("【%s】: flink job (%s) started in mode [%s]!" % (
+            click.style("Step3", fg="red"), click.style(table, fg="red"), mode))
     else:
         click.echo(" table( %s ) not in the configure." % click.style(table, fg="yellow"))

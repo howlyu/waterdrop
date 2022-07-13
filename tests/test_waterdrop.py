@@ -4,14 +4,17 @@ import pytest
 
 
 class TestCase:
+    def __init__(self):
+        self.config_key = ['sinkdb_jdbcurl', 'sinkdb_loadurl', 'sinkdb_host', 'sinkdb_port', 'sinkdb_username',
+                           'output_dir',
+                           'sourcedb_host', 'sourcedb_port', 'sourcedb_user', 'sourcedb_password', 'tables']
+        self.config = waterdrop.get_configure('configure.yaml')
+
     def test_get_configure(self):
-        config_key = ['sinkdb_jdbcurl', 'sinkdb_loadurl', 'sinkdb_host', 'sinkdb_port', 'sinkdb_username', 'output_dir',
-                      'sourcedb_host', 'sourcedb_port', 'sourcedb_user', 'sourcedb_password', 'tables']
-        config = waterdrop.get_configure('configure.yaml')
         pytest.assume(1 == 1)
         assert waterdrop.get_configure('../configure.ini') == {}
         assert waterdrop.get_configure('') is not None
-        assert all([key in config.keys() for key in config_key])
+        assert all([key in self.config.keys() for key in self.config_key])
 
     @pytest.mark.parametrize('table',
                              ['cdcdemo.table1', 'cdcdemo.table2'])

@@ -4,6 +4,7 @@
 output
 .idea
 ACFJ_waterdrop.egg-info
+.token
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -4,3 +4,4 @@ click
 sarge
 pytest
 pytest-assume
+httpx
