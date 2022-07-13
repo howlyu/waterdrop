@@ -253,7 +253,7 @@ def create_all_flink_jobs(mode):
               help='input the table name that is synchronized to Dorisdb')
 @click.option('-m', '--mode',
               type=click.Choice(['streamx', 'command'], case_sensitive=True),
-              prompt='Choice mode [streamx|command]',
+              prompt='Choice mode',
               default='streamx',
               required=True,
               help='choice the mode of flink application execution'

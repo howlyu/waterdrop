@@ -8,7 +8,7 @@ sinkdb_password: "sailingdw"
 sinkdb_dbname_suffix: "ods_"
 
 # table rule
-"output_dir": "output/result-"
+"output_dir": "output/result"
 
 # flink env & parameters
 flink_pipeline_name_suffix: "cdc-task-"
