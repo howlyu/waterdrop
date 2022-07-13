@@ -281,6 +281,10 @@ def workflow(table, mode):
         # start flink application with mode
         mode = Streamx() if mode == 'streamx' else Command()
         mode.create(table)
+        app = mode.get(table)
+        print(app)
+        if app is not None:
+            mode.start(app.get("id"))
         click.echo("【%s】: flink job (%s) started in mode [%s]!" % (
             click.style("Step3", fg="red"), click.style(table, fg="red"), mode))
     else:

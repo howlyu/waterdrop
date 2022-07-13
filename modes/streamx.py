@@ -66,7 +66,7 @@ class Streamx(Base):
                 if self.sys_config.get("flink_pipeline_name_suffix") + table_name == app.get("jobName"):
                     click.echo("Application id (%s) / name (%s) existed!" % (app.get("id"), app.get("jobName")))
                     return False
-            sql = "".join(codecs.open(sql_script, "r", "utf-8").readlines())
+            sql = "".join(codecs.open(sql_script, "r", "utf-8").readlines()).strip()
             # verified the sql syntax
             if self.sql_verify(sql):
                 data = {'jobName': self.sys_config.get("flink_pipeline_name_suffix") + table_name,
@@ -88,8 +88,10 @@ class Streamx(Base):
             else:
                 return False
 
-    def get(self, job_id: int) -> dict:
-        data = {'id': job_id}
+    def get(self, table_name: int) -> dict:
+        job_id = [app.get("id") for app in self.list() if
+                  self.sys_config.get("flink_pipeline_name_suffix") + table_name == app.get("jobName")]
+        data = {'id': job_id[0]}
         r = httpx.post(url=self.url_header + 'flink/app/get', headers=self.headers, data=data)
         if r.status_code == httpx.codes.OK:
             return r.json().get("data")
