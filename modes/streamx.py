@@ -58,7 +58,7 @@ class Streamx(Base):
     def create(self, table_name: str) -> bool:
         if self.sys_config is not None:
             sql_script = os.getenv("WATERDROP_HOME") + '/' + self.sys_config.get(
-                "output_dir") + table_name + "/flink-create." + table_name + ".sql"
+                "output_dir") + '-' + table_name + "/flink-create." + table_name + ".sql"
             if not exists(sql_script):
                 return False
             # Check the application name
