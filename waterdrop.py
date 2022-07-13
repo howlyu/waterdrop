@@ -226,9 +226,7 @@ def create_single_table_in_starrocks(table):
 @click.argument("mode",
                 default="streamx",
                 required=True,
-                prompt="create mode: [streamx|command]",
-                type=click.Choice(['streamx', 'command'], case_sensitive=True),
-                help="choice the mode of creating flink job")
+                type=click.Choice(['streamx', 'command'], case_sensitive=True))
 def create_all_flink_jobs(mode):
     """create flink job in local flink cluster"""
     config = get_configure()
