@@ -81,9 +81,9 @@ class Streamx(Base):
                         'description': table_name,
                         'flinkClusterId': self.sys_config.get("streamx_cluster_id"),
                         'socketId': 'ae308d32-d8cf-46a6-ac5e-9390b7fec611'}
-                # r = httpx.post(url=self.url_header + 'flink/app/create', headers=self.headers, data=data)
-                # if r.status_code == httpx.codes.OK:
-                #     return True
+                r = httpx.post(url=self.url_header + 'flink/app/create', headers=self.headers, data=data)
+                if r.status_code == httpx.codes.OK:
+                    return True
                 return True
             else:
                 return False

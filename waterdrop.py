@@ -163,7 +163,7 @@ def generate_single_script(output):
     if not exists(output):
         return None
     try:
-        p = sarge.run(os.getenv("WATERDROP_HOME") + "tool/starrocks-migrate-tool -c " + output,
+        p = sarge.run(os.getenv("WATERDROP_HOME") + "/tool/starrocks-migrate-tool -c " + output,
                       stderr=sarge.Capture())
         if p.returncode != 0:
             returncode = p.returncode
@@ -241,7 +241,7 @@ def create_all_flink_jobs(mode):
             empty_char=" ",
     ) as bar:
         for table in config.get("tables"):
-            mode.create(table, config)
+            mode.create(table)
             bar.update(1)
 
 
@@ -280,7 +280,7 @@ def workflow(table, mode):
 
         # start flink application with mode
         mode = Streamx() if mode == 'streamx' else Command()
-        mode.create(table, get_configure())
+        mode.create(table)
         click.echo("【%s】: flink job (%s) started in mode [%s]!" % (
             click.style("Step3", fg="red"), click.style(table, fg="red"), mode))
     else:
