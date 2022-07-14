@@ -19,10 +19,6 @@ def check_env() -> bool:
     return True if os.getenv("WATERDROP_HOME") is not None else False
 
 
-def check_table_exists_config(table) -> bool:
-    return True if table in get_configure().get("tables") else False
-
-
 def print_version(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
@@ -39,8 +35,7 @@ def cli():
     pass
 
 
-def get_configure(filename=os.path.join(
-    os.path.dirname(__file__), "./configure.yaml")) -> dict:
+def get_configure(filename=os.path.join(os.getenv("WATERDROP_HOME"), "configure.yaml")) -> dict:
     """ get the configure from YAML file"""
     filename = filename if exists(filename) or filename != '' else os.path.join(
         os.path.dirname(__file__) + "/configure.yaml")
@@ -58,7 +53,7 @@ def generate_single_config(table):
     tpl = env.get_template('config.tpl')
     data = get_configure()
     data['table'] = table
-    data['output_dir'] = os.path.join(os.getenv("WATERDROP_HOME"), data['output_dir'], 'result-' + table)
+    data['output_dir'] = os.path.join('..', data['output_dir'], 'result-' + table)
     return tpl.render(data)
 
 
@@ -139,7 +134,7 @@ def generate_all_config(mode):
             empty_char=" ",
     ) as bar:
         for table in config.get("tables"):
-            config_filename = config.get("output_dir") + "/config" + "/config-" + table + ".conf"
+            config_filename = os.path.join(config.get("output_dir"), "config", "config-" + table + ".conf")
             dump_file(config_filename, generate_single_config(table))
             generate_single_script(config_filename)
             if mode == 'command':
@@ -180,7 +175,6 @@ def generate_single_script(output):
 @cli.command("gen-all-tables-dorisdb")
 def create_all_table_in_starrocks():
     """ Create all tables in Starrocks"""
-    all_script_name = "starrocks-create.all.sql"
     config = get_configure()
     with click.progressbar(
             length=len(config.get("tables")),
@@ -199,8 +193,10 @@ def create_all_table_in_starrocks():
 def create_single_table_in_starrocks(table):
     """ Create table in Starrocks"""
     config = get_configure()
-    script_dir = config.get("output_dir") + '-' + table + "/starrocks-create." + table + ".sql"
+    script_dir = os.path.join(os.getenv("WATERDROP_HOME"), config.get("output_dir"), 'result-' + table,
+                              "starrocks-create." + table + ".sql")
     if not exists(script_dir):
+        click.echo("Not Existed (%s)" % script_dir)
         return None
     # execute sql script in mysql
     try:
@@ -263,8 +259,10 @@ def workflow(table, mode):
         2=create table in starrocks,
         3=create flink job with mode
     """
-    if check_table_exists_config(table):
-        output_dir = get_configure().get("output_dir") + "/config/" + "config-" + table + ".conf"
+    if table in get_configure().get("tables"):
+        # generate the config and scripts
+        output_dir = os.path.join(os.getenv("WATERDROP_HOME"), get_configure().get("output_dir"), "config",
+                                  "config-" + table + ".conf")
         dump_file(output_dir, generate_single_config(table))
         generate_single_script(output_dir)
         if mode == "command":
