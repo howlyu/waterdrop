@@ -7,8 +7,9 @@ import yaml
 class Base:
 
     def __init__(self):
-        self.sys_config = yaml.load(codecs.open(os.path.join(
-            os.path.dirname(os.path.dirname(__file__)) + "/configure.yaml"), 'r', 'utf-8'), Loader=yaml.FullLoader)
+        self.sys_config = yaml.load(
+            codecs.open(os.path.join(os.path.dirname(os.path.dirname(__file__)), "configure.yaml"), 'r', 'utf-8'),
+            Loader=yaml.FullLoader)
 
     def create(self, table_name: str):
         pass

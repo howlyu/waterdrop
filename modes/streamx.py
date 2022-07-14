@@ -25,7 +25,7 @@ class Streamx(Base):
     def __passport_signin(self) -> str:
         data = {'username': self.username,
                 'password': self.password}
-        token_dir = os.getenv('WATERDROP_HOME') + '/.token' if os.getenv('WATERDROP_HOME') else '../.token'
+        token_dir = os.path.join(os.getenv('WATERDROP_HOME'), '.token') if os.getenv('WATERDROP_HOME') else '../.token'
         r = httpx.post(url=self.url_header + 'passport/signin', data=data)
         if r.status_code == httpx.codes.OK:
             token = r.json().get("data").get("token")
@@ -58,8 +58,8 @@ class Streamx(Base):
 
     def create(self, table_name: str) -> bool:
         if self.sys_config is not None:
-            sql_script = os.getenv("WATERDROP_HOME") + '/' + self.sys_config.get(
-                "output_dir") + '-' + table_name + "/flink-create." + table_name + ".sql"
+            sql_script = os.path.join(os.getenv("WATERDROP_HOME"), self.sys_config.get("output_dir"),
+                                      'result-' + table_name, "flink-create." + table_name + ".sql")
             if not exists(sql_script):
                 return None
             # Check the application name
