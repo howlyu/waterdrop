@@ -120,14 +120,11 @@ def replace_single_script(dbname, table):
 
 
 @cli.command("gen-all-scripts")
-@click.argument("output_dir",
-                default="output/",
-                type=click.Path())
 @click.argument("mode",
                 default="streamx",
                 required=True,
                 type=click.Choice(['streamx', 'command'], case_sensitive=True))
-def generate_all_config(output_dir, mode):
+def generate_all_config(mode):
     """According to configure yaml file, generate all configs and scripts."""
     if not check_env():
         click.echo("Please set %s first." % click.style("WATERDROP_HOME", fg="red"))
@@ -143,9 +140,9 @@ def generate_all_config(output_dir, mode):
             empty_char=" ",
     ) as bar:
         for table in config.get("tables"):
-            config_filename = "config-" + table + ".conf"
-            dump_file(output_dir + "/config/" + config_filename, generate_single_config(table))
-            generate_single_script(output_dir + "/config/" + config_filename)
+            config_filename = config.get("output_dir") + "/config" + "/config-" + table + ".conf"
+            dump_file(config_filename, generate_single_config(table))
+            generate_single_script(config_filename)
             if mode == 'command':
                 append_params_single_script(table)
             replace_single_script(table.split(".")[0], table)
