@@ -95,9 +95,9 @@ def replace_single_script(dbname, table):
     if config.get("sinkdb_dbname_suffix") is None:
         return
     cmd = "find %s -type f -iname '*' -print0 | xargs -0 sed -i 's/`%s`/`%s`/g'" % (
-        config.get("output_dir") + '-' + table, dbname, config.get("sinkdb_dbname_suffix") + dbname)
+        os.path.join(config.get("output_dir"), 'result-' + table), dbname, config.get("sinkdb_dbname_suffix") + dbname)
     cmd1 = "find %s -type f -iname 'flink-create*' -print0 |xargs -0 sed -i '/%s` (/,/);/ s/'\"'\"%s\"'\"/\"'\"%s\"'\"'/'" % (
-        config.get("output_dir") + '-' + table, table.split(".")[1] + "_sink",
+        os.path.join(config.get("output_dir"), 'result-' + table), table.split(".")[1] + "_sink",
         dbname, config.get("sinkdb_dbname_suffix") + dbname)
     try:
         p = sarge.run(cmd, stderr=sarge.Capture())
