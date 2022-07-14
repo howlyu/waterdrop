@@ -198,10 +198,7 @@ def create_all_table_in_starrocks():
 def create_single_table_in_starrocks(table):
     """ Create table in Starrocks"""
     config = get_configure()
-    output_dir = config.get("output_dir") + '-' + table
-    if not exists(output_dir):
-        return None
-    script_dir = output_dir + "starrocks-create." + table + ".sql"
+    script_dir = config.get("output_dir") + '-' + table + "/starrocks-create." + table + ".sql"
     if not exists(script_dir):
         return None
     # execute sql script in mysql
