@@ -2,7 +2,6 @@
 
 import codecs
 import os.path
-import time
 from os import makedirs
 from os.path import exists
 
@@ -59,7 +58,7 @@ def generate_single_config(table):
     tpl = env.get_template('config.tpl')
     data = get_configure()
     data['table'] = table
-    data['output_dir'] = os.path.join('..', data['output_dir'] + '-' + table)
+    data['output_dir'] = os.path.join(os.getenv("WATERDROP_HOME"), data['output_dir'], 'result-' + table)
     return tpl.render(data)
 
 
