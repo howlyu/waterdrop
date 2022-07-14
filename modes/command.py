@@ -1,17 +1,16 @@
-import codecs
 import os
 from os.path import exists
 
 import click
 import sarge
 
-import waterdrop
 from modes.base import Base
 
 
 class Command(Base):
+
     def __init__(self):
-        self.sys_config = waterdrop.get_configure()
+        super().__init__()
         self.flink_home = os.getenv("FLINK_HOME") if os.getenv("FLINK_HOME") else "~/.local/flink/"
 
     def start(self, job_id: int):

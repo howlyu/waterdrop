@@ -276,16 +276,16 @@ def workflow(table, mode):
 
         # create table in starrocks
         create_single_table_in_starrocks(table)
-        click.echo("【%s】: create table (%s) succeed!" % (click.style("Step2", fg="red"), click.style(table, fg="red")))
+        click.echo(
+            "【%s】: create table (%s) succeed!" % (click.style("Step2", fg="red"), click.style(table, fg="green")))
 
         # start flink application with mode
-        mode = Streamx() if mode == 'streamx' else Command()
-        mode.create(table)
-        app = mode.get(table)
-        print(app)
-        if app is not None:
-            mode.start(app.get("id"))
-        click.echo("【%s】: flink job (%s) started in mode [%s]!" % (
-            click.style("Step3", fg="red"), click.style(table, fg="red"), mode))
+        m = Streamx() if mode == 'streamx' else Command()
+        if m.create(table) is not None:
+            click.echo("【%s】: flink job (%s) started in mode [%s]!" % (
+                click.style("Step3", fg="red"), click.style(table, fg="green"), mode))
+        else:
+            click.echo("【%s】: flink job (%s) failed in mode [%s]!" % (
+                click.style("Step3", fg="red"), click.style(table, fg="red"), mode))
     else:
         click.echo(" table( %s ) not in the configure." % click.style(table, fg="yellow"))

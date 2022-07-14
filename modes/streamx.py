@@ -1,19 +1,18 @@
 import codecs
 import os
+from datetime import datetime
 from os.path import exists
 
 import click
 import httpx
-from datetime import datetime
 
-import waterdrop
 from modes.base import Base
 
 
 class Streamx(Base):
 
     def __init__(self):
-        self.sys_config = waterdrop.get_configure()
+        super().__init__()
         self.url_header = self.sys_config.get("streamx_url")
         self.username = self.sys_config.get("streamx_username")
         self.password = self.sys_config.get("streamx_password")
@@ -26,7 +25,7 @@ class Streamx(Base):
     def __passport_signin(self) -> str:
         data = {'username': self.username,
                 'password': self.password}
-        token_dir = os.getenv('WATERDROP_HOME') + '.token' if os.getenv('WATERDROP_HOME') else '../.token'
+        token_dir = os.getenv('WATERDROP_HOME') + '/.token' if os.getenv('WATERDROP_HOME') else '../.token'
         r = httpx.post(url=self.url_header + 'passport/signin', data=data)
         if r.status_code == httpx.codes.OK:
             token = r.json().get("data").get("token")
@@ -38,7 +37,7 @@ class Streamx(Base):
             return ''
 
     def get_token(self) -> str:
-        token_dir = os.getenv('WATERDROP_HOME') + '.token'
+        token_dir = os.getenv('WATERDROP_HOME') + '/.token'
         if not exists(token_dir) or (
                 exists(token_dir) and (
                 datetime.now() - datetime.fromtimestamp(os.path.getatime(token_dir))).days >= 0.5):
@@ -48,24 +47,26 @@ class Streamx(Base):
         return str(codecs.open(token_dir, 'r', 'utf-8').readline())
 
     def start(self, job_id) -> bool:
-        data = {'id': job_id}
+        data = {'id': job_id,
+                'savePointed': 'false',
+                'savePoint': '',
+                'flameGraph': 'false',
+                'allowNonRestored': 'false'}
         r = httpx.post(url=self.url_header + 'flink/app/start', headers=self.headers, data=data)
         if r.status_code == httpx.codes.OK:
             return True
-        else:
-            return False
 
     def create(self, table_name: str) -> bool:
         if self.sys_config is not None:
             sql_script = os.getenv("WATERDROP_HOME") + '/' + self.sys_config.get(
                 "output_dir") + '-' + table_name + "/flink-create." + table_name + ".sql"
             if not exists(sql_script):
-                return False
+                return None
             # Check the application name
             for app in self.list():
                 if self.sys_config.get("flink_pipeline_name_suffix") + table_name == app.get("jobName"):
                     click.echo("Application id (%s) / name (%s) existed!" % (app.get("id"), app.get("jobName")))
-                    return False
+                    return None
             sql = "".join(codecs.open(sql_script, "r", "utf-8").readlines()).strip()
             # verified the sql syntax
             if self.sql_verify(sql):
@@ -84,11 +85,8 @@ class Streamx(Base):
                 r = httpx.post(url=self.url_header + 'flink/app/create', headers=self.headers, data=data)
                 if r.status_code == httpx.codes.OK:
                     return True
-                return True
-            else:
-                return False
 
-    def get(self, table_name: int) -> dict:
+    def get(self, table_name: str) -> dict:
         job_id = [app.get("id") for app in self.list() if
                   self.sys_config.get("flink_pipeline_name_suffix") + table_name == app.get("jobName")]
         data = {'id': job_id[0]}
@@ -116,13 +114,3 @@ class Streamx(Base):
         else:
             click.echo("SQL Verify [%s]: %s" % (r.json().get("status"), r.json().get("exception").split("\n")[0]))
             return False
-
-
-def main():
-    sx = Streamx()
-    for i in sx.list():
-        print(i.get('id'))
-
-
-if __name__ == '__main__':
-    main()

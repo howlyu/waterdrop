@@ -1,7 +1,12 @@
+import codecs
+
+import yaml
+
+
 class Base:
 
     def __init__(self):
-        self.data = []
+        self.sys_config = yaml.load(codecs.open('../configure.yaml', 'r', 'utf-8'), Loader=yaml.FullLoader)
 
     def create(self, table_name: str):
         pass
@@ -15,7 +20,7 @@ class Base:
     def cancel(self, job_id: int):
         pass
 
-    def get(self, job_id: int):
+    def get(self, table_name: str):
         pass
 
     def list(self):
