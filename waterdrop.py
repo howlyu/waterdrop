@@ -67,16 +67,18 @@ def append_params_to_all_script():
 def append_params_single_script(table):
     """ put the flink env parameters into the flink job script"""
     config = get_configure()
-    output_dir = os.path.join(os.path.dirname(__file__), config.get("output_dir") + '-' + table)
+    output_dir = os.path.join(os.getenv("WATERDROP_HOME"), config.get("output_dir"), 'result-' + table,
+                              "flink-create." + table + ".sql")
     pipeline_name_suffix = config.get("flink_pipeline_name_suffix") if config.get(
         "flink_pipeline_name_suffix") is not None else "cdc-task-"
     cmd = "SET pipeline.name = " + pipeline_name_suffix + table + ";\\n"
     if len(config.get("flink_env_parameters")) > 0:
         cmd = cmd + "\\n".join(["SET " + p + ";" for p in config.get("flink_env_parameters")])
     if not exists(output_dir):
+        click.echo("Not existed ($s)" % output_dir)
         return None
     try:
-        p = sarge.run("sed -i '1i\%s\\n' %s" % (cmd, output_dir + "/flink-create." + table + ".sql"),
+        p = sarge.run("sed -i '1i\%s\\n' %s" % (cmd, output_dir),
                       stderr=sarge.Capture())
         if p.returncode != 0:
             returncode = p.returncode
@@ -137,9 +139,9 @@ def generate_all_config(mode):
             config_filename = os.path.join(config.get("output_dir"), "config", "config-" + table + ".conf")
             dump_file(config_filename, generate_single_config(table))
             generate_single_script(config_filename)
+            replace_single_script(table.split(".")[0], table)
             if mode == 'command':
                 append_params_single_script(table)
-            replace_single_script(table.split(".")[0], table)
             bar.update(1)
 
 
@@ -265,9 +267,9 @@ def workflow(table, mode):
                                   "config-" + table + ".conf")
         dump_file(output_dir, generate_single_config(table))
         generate_single_script(output_dir)
+        replace_single_script(table.split(".")[0], table)
         if mode == "command":
             append_params_single_script(table)
-        replace_single_script(table.split(".")[0], table)
         click.echo("【%s】: configure and scripts generated!" % click.style("Step1", fg="red"))
 
         # create table in starrocks
