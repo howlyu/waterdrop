@@ -54,10 +54,20 @@ $ waterdrop --version
 # 查看帮助
 $ waterdrop --help
 
-# 总共分成3步执行
-# 1. 根据模板生成配置文件和脚本文件
-# 2. 在starrocks中建表
-# 3. 启动flink job
+# 场景一
+# 如果需要批量生成任务，可按以下步骤执行
+# 1. 把需要导入的表，加到配置文件中 configure.yaml
+# 2. 根据模板生成配置文件和脚本文件，默认按streamx模式生成脚本
+$ waterdrop gen-all-scripts
+# 3. 在starrocks中建表
+$ waterdrop gen-all-tables-dorisdb
+# 4. 启动flink job, 默认按streamx模式执行
+$ waterdrop gen-all-flink-job
+
+
+# 场景二
+# 如果需要生成某一个表的脚本任务，默认按streamx模式
+$ waterdrop workflow -t schema.table -m streamx
 ```
 
 - Tips:
