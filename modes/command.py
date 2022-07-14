@@ -50,7 +50,8 @@ class Command(Base):
 
     def create(self, table_name: str):
         """According to the table name, startup the flink job. """
-        sql_script = self.sys_config.get("output_dir") + table_name + "/flink-create." + table_name + ".sql"
+        sql_script = os.path.join(os.getenv("WATERDROP_HOME"), self.sys_config.get("output_dir"),
+                                  "result-" + table_name, "flink-create." + table_name + ".sql")
         if not exists(sql_script):
             click.echo("Directory (%s) not exist!" % sql_script)
             return None
